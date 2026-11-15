@@ -1,0 +1,415 @@
+@use '@ionic/angular/css/core.css';
+@use '@ionic/angular/css/normalize.css';
+@use '@ionic/angular/css/structure.css';
+@use '@ionic/angular/css/typography.css';
+@use '@ionic/angular/css/padding.css';
+@use '@ionic/angular/css/flex-utils.css';
+@use '@ionic/angular/css/display.css';
+@use '@ionic/angular/css/palettes/dark.system.css';
+
+/*
+ * One colour per thing you track, the same on every screen:
+ * steps blue · calories orange · protein aqua · money amber · weight violet · workouts pink · routine green.
+ */
+:root {
+  --ion-color-primary: #2a78d6;
+  --ion-color-primary-rgb: 42, 120, 214;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #256abf;
+  --ion-color-primary-tint: #3987e5;
+
+  --ion-color-danger: #d03b3b;
+  --ion-color-danger-rgb: 208, 59, 59;
+  --ion-color-danger-shade: #b73434;
+  --ion-color-danger-tint: #d54f4f;
+
+  --ion-background-color: #f6f6f3;
+  --ion-background-color-rgb: 246, 246, 243;
+  --ion-toolbar-background: #f6f6f3;
+  --ion-tab-bar-background: #ffffff;
+  --ion-item-background: transparent;
+
+  --fw-card: #ffffff;
+  --fw-ink: #0b0b0b;
+  --fw-ink-2: #52514e;
+  --fw-muted: #7a7873;
+  --fw-grid: #e1e0d9;
+  --fw-axis: #c3c2b7;
+  --fw-border: rgba(11, 11, 11, 0.08);
+  --fw-wash: rgba(11, 11, 11, 0.04);
+
+  --c-steps: #2a78d6;
+  --c-kcal: #eb6834;
+  --c-protein: #1baf7a;
+  --c-money: #eda100;
+  --c-weight: #4a3aa7;
+  --c-workout: #e87ba4;
+  --c-routine: #008300;
+
+  --fw-good: #0ca30c;
+  --fw-good-text: #006300;
+  --fw-warn: #fab219;
+  --fw-bad: #d03b3b;
+  --fw-radius: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  .md body {
+    --ion-color-primary: #3987e5;
+    --ion-color-primary-rgb: 57, 135, 229;
+    --ion-color-primary-shade: #2a78d6;
+    --ion-color-primary-tint: #5598e7;
+
+    --ion-background-color: #0d0d0d;
+    --ion-background-color-rgb: 13, 13, 13;
+    --ion-toolbar-background: #0d0d0d;
+    --ion-tab-bar-background: #1a1a19;
+    --ion-item-background: transparent;
+
+    --fw-card: #1a1a19;
+    --fw-ink: #ffffff;
+    --fw-ink-2: #c3c2b7;
+    --fw-muted: #8f8d87;
+    --fw-grid: #2c2c2a;
+    --fw-axis: #383835;
+    --fw-border: rgba(255, 255, 255, 0.08);
+    --fw-wash: rgba(255, 255, 255, 0.05);
+
+    --c-steps: #3987e5;
+    --c-kcal: #d95926;
+    --c-protein: #199e70;
+    --c-money: #c98500;
+    --c-weight: #9085e9;
+    --c-workout: #d55181;
+    --c-routine: #0ca30c;
+    --fw-good-text: #0ca30c;
+  }
+}
+
+body {
+  background: var(--ion-background-color);
+  color: var(--fw-ink);
+}
+
+ion-toolbar {
+  --border-width: 0;
+}
+
+ion-header.header-md {
+  box-shadow: none;
+}
+
+ion-title.big {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+ion-tab-bar {
+  --border: 1px solid var(--fw-border);
+  height: 64px;
+}
+
+ion-tab-button {
+  --color-selected: var(--ion-color-primary);
+  font-size: 12px;
+}
+
+/* ---------- Building blocks shared by every screen ---------- */
+
+.card {
+  background: var(--fw-card);
+  border-radius: var(--fw-radius);
+  padding: 16px;
+  margin: 12px 16px;
+  box-shadow: 0 0 0 1px var(--fw-border), 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--fw-ink);
+}
+
+.card-title .link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  background: none;
+  border: 0;
+  padding: 4px 0;
+}
+
+.section-label {
+  margin: 20px 20px 4px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fw-muted);
+}
+
+.muted {
+  color: var(--fw-muted);
+}
+
+.ink-2 {
+  color: var(--fw-ink-2);
+}
+
+.small {
+  font-size: 13px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-num {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--fw-ink-2);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+/* A thin meter: the coloured fill on a pale track of the same colour. */
+.meter {
+  position: relative;
+  height: 8px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--fw-wash);
+}
+
+.meter > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 99px;
+  background: var(--meter-color, var(--ion-color-primary));
+  transition: width 0.4s ease;
+}
+
+.meter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--meter-color, var(--ion-color-primary));
+  opacity: 0.16;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--dot-color);
+  flex: none;
+}
+
+/* Big tap targets for choosing one of several — categories, workout types, meals. */
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 68px;
+  padding: 8px 4px;
+  border-radius: 14px;
+  border: 1.5px solid var(--fw-border);
+  background: var(--fw-card);
+  color: var(--fw-ink);
+  font-size: 12px;
+  font-weight: 550;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.choice .emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.choice.on {
+  border-color: var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  color: var(--ion-color-primary);
+}
+
+.pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 16px 6px;
+  scrollbar-width: none;
+}
+
+.pills::-webkit-scrollbar {
+  display: none;
+}
+
+.pill {
+  flex: none;
+  padding: 8px 14px;
+  border-radius: 99px;
+  border: 1.5px solid var(--fw-border);
+  background: var(--fw-card);
+  color: var(--fw-ink);
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.pills.wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+  padding: 0 0 4px;
+}
+
+/* Breakfast · Lunch · Snacks · Dinner always fit in one row. */
+.meal-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 12px 16px 4px;
+}
+
+.meal-picker .pill {
+  padding: 8px 2px;
+  font-size: 13px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+ion-segment-button {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.pill.on {
+  border-color: var(--ion-color-primary);
+  background: var(--ion-color-primary);
+  color: #fff;
+}
+
+.big-input {
+  --padding-start: 0;
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.empty {
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--fw-ink-2);
+}
+
+.empty .emoji {
+  display: block;
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--fw-wash);
+  flex: none;
+}
+
+.date-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 12px 0;
+}
+
+.date-switch strong {
+  font-size: 16px;
+}
+
+ion-item.plain {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+}
+
+ion-list.flush {
+  padding: 0;
+  background: transparent;
+}
+
+ion-modal.sheet {
+  --border-radius: 22px;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 650;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  color: var(--ion-color-primary);
+}
+
+.fab-space {
+  height: 88px;
+}
+
+ion-button {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}

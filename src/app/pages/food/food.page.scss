@@ -1,0 +1,109 @@
+.nav {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--fw-card);
+  color: var(--fw-ink);
+  font-size: 20px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 1px var(--fw-border);
+}
+
+.nav:disabled {
+  opacity: 0.35;
+}
+
+.sum-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.over {
+  color: var(--fw-bad);
+  font-weight: 600;
+}
+
+.macros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.macros div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.macros strong {
+  font-size: 17px;
+}
+
+.macros small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fw-ink-2);
+}
+
+.meal .card-title {
+  margin-bottom: 4px;
+}
+
+.kcal {
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.meal h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+
+.thumb {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+}
+
+.item-kcal {
+  font-weight: 650;
+  color: var(--fw-ink);
+}
+
+.none {
+  margin: 4px 0 0;
+}
+
+button.card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: calc(100% - 32px);
+  text-align: left;
+  border: 0;
+  color: inherit;
+  font: inherit;
+}
+
+.ideas .emoji {
+  font-size: 28px;
+}
+
+.ideas-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chev {
+  font-size: 28px;
+  color: var(--fw-muted);
+}

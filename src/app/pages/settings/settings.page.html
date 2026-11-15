@@ -1,0 +1,179 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button [defaultHref]="home" text="" /></ion-buttons>
+    <ion-title>Settings</ion-title>
+    <ion-buttons slot="end"><ion-button [strong]="true" (click)="save()">Save</ion-button></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="section-label">About you</div>
+  <section class="card form">
+    <ion-input label="Your name" labelPlacement="stacked" placeholder="e.g. Arjun" [maxlength]="40"
+               [ngModel]="draft().name" (ngModelChange)="set('name', $event)" />
+    @if (hasFit) {
+    <div class="field-label">Body</div>
+    <div class="pills wrap">
+      <button class="pill" [class.on]="draft().sex === 'male'" (click)="set('sex', 'male')">Male</button>
+      <button class="pill" [class.on]="draft().sex === 'female'" (click)="set('sex', 'female')">Female</button>
+    </div>
+    <div class="grid-2">
+      <ion-input label="Birth year" labelPlacement="stacked" type="number" inputmode="numeric" placeholder="e.g. 1996"
+                 [min]="1930" [max]="thisYear - 10" [ngModel]="draft().birthYear" (ngModelChange)="set('birthYear', $event)" />
+      <ion-input label="Height (cm)" labelPlacement="stacked" type="number" inputmode="decimal" placeholder="e.g. 175"
+                 [ngModel]="draft().heightCm" (ngModelChange)="set('heightCm', $event)" />
+      <ion-input label="Weight now (kg)" labelPlacement="stacked" type="number" inputmode="decimal" placeholder="e.g. 78"
+                 [ngModel]="weight()" (ngModelChange)="weight.set($event === '' ? null : +$event)" />
+      <ion-input label="Goal weight (kg)" labelPlacement="stacked" type="number" inputmode="decimal" placeholder="e.g. 72"
+                 [ngModel]="draft().goalWeightKg" (ngModelChange)="set('goalWeightKg', $event)" />
+    </div>
+    }
+    @if (!hasFit) {
+      <ion-input label="Monthly budget (₹)" labelPlacement="stacked" type="number" inputmode="numeric" placeholder="optional"
+                 [ngModel]="draft().monthlyBudget" (ngModelChange)="set('monthlyBudget', $event)" />
+    }
+  </section>
+
+  @if (hasFit) {
+  <div class="section-label">Your goal</div>
+  <section class="card form">
+    <div class="grid-3">
+      @for (g of goalsList; track g.key) {
+        <button class="choice" [class.on]="draft().goal === g.key" (click)="set('goal', g.key)">{{ g.label }}</button>
+      }
+    </div>
+    <ion-select label="How active are you?" labelPlacement="stacked" interface="action-sheet"
+                [value]="draft().activity" (ionChange)="set('activity', $event.detail.value)">
+      @for (a of activities; track a.key) { <ion-select-option [value]="a.key">{{ a.label }}</ion-select-option> }
+    </ion-select>
+    <div class="field-label">Food you eat</div>
+    <div class="pills wrap">
+      @for (d of diets; track d.key) {
+        <button class="pill" [class.on]="draft().diet === d.key" (click)="set('diet', d.key)">{{ d.label }}</button>
+      }
+    </div>
+  </section>
+
+  <div class="section-label">Daily targets</div>
+  <section class="card form">
+    <ion-toggle [checked]="draft().autoGoals" (ionChange)="set('autoGoals', $event.detail.checked)" justify="space-between">
+      Work out calories &amp; protein for me
+    </ion-toggle>
+    @if (draft().autoGoals) {
+      @if (suggested().kcal; as kcal) {
+        <div class="auto">
+          <div><span class="stat-value num">{{ num(kcal) }}</span> <span class="ink-2">kcal a day</span></div>
+          <div><span class="stat-value num">{{ suggested().protein }}</span> <span class="ink-2">g protein a day</span></div>
+        </div>
+        <p class="small muted">From your body, activity and goal (Mifflin-St Jeor formula). It updates as your weight changes.</p>
+      } @else {
+        <p class="small ink-2">Fill in body, birth year, height and weight above to get your numbers.
+          Until then: {{ num(draft().calorieGoal) }} kcal and {{ draft().proteinGoal }} g protein.</p>
+      }
+    } @else {
+      <div class="grid-2">
+        <ion-input label="Calories (kcal)" labelPlacement="stacked" type="number" inputmode="numeric"
+                   [ngModel]="draft().calorieGoal" (ngModelChange)="set('calorieGoal', $event)" />
+        <ion-input label="Protein (g)" labelPlacement="stacked" type="number" inputmode="numeric"
+                   [ngModel]="draft().proteinGoal" (ngModelChange)="set('proteinGoal', $event)" />
+      </div>
+    }
+    <div class="grid-2">
+      <ion-input label="Steps a day" labelPlacement="stacked" type="number" inputmode="numeric"
+                 [ngModel]="draft().stepGoal" (ngModelChange)="set('stepGoal', $event)" />
+      @if (hasMoney) {
+        <ion-input label="Monthly budget (₹)" labelPlacement="stacked" type="number" inputmode="numeric" placeholder="optional"
+                   [ngModel]="draft().monthlyBudget" (ngModelChange)="set('monthlyBudget', $event)" />
+      }
+    </div>
+  </section>
+  }
+
+  <div class="section-label" id="ai">{{ hasFit ? 'Free AI for food photos' : 'Free AI to read bills' }}</div>
+  <section class="card form">
+    <p class="small ink-2 no-top">{{ hasFit ? 'Snap a meal and get its calories.' : 'Snap a bill and the amount, shop and date fill in.' }}
+      This uses Google's <strong>free</strong> Gemini key — no card, about a minute:</p>
+    <ol class="steps small">
+      <li>Tap <strong>Get free key</strong> and sign in with your Google account.</li>
+      <li>Tap <strong>Create API key</strong> and copy it.</li>
+      <li>Paste it below and tap <strong>Test</strong>.</li>
+    </ol>
+    <ion-button fill="outline" size="small" (click)="openAiStudio()">Get free key</ion-button>
+    <ion-input label="Gemini API key" labelPlacement="stacked" type="password" placeholder="Paste key here" autocomplete="off"
+               [ngModel]="aiKey()" (ngModelChange)="aiKey.set($event ?? '')">
+      <ion-input-password-toggle slot="end" />
+    </ion-input>
+    <div class="row">
+      <ion-button size="small" [disabled]="!aiKey().trim() || testing()" (click)="testAi()">
+        @if (testing()) { <ion-spinner name="dots" /> } @else { Test }
+      </ion-button>
+      @if (aiStatus(); as s) { <span class="small" [class.ok]="s.ok" [class.err]="!s.ok">{{ s.text }}</span> }
+    </div>
+    <p class="small muted">Only the photos you choose to scan are sent to Google. On the free plan Google may use them to
+      improve its products. Everything else stays on this phone.@if (native && hasMoney) { Bills are read on the phone itself, even without a key.}</p>
+    <button class="adv" (click)="showAdvanced.set(!showAdvanced())">{{ showAdvanced() ? 'Hide' : 'Show' }} advanced</button>
+    @if (showAdvanced()) {
+      <ion-input label="Model" labelPlacement="stacked" [ngModel]="aiModel()" (ngModelChange)="aiModel.set($event ?? '')" />
+      <p class="small muted">Leave as <code>gemini-flash-latest</code> — it always points to Google's newest free model.</p>
+    }
+  </section>
+
+  @if (native && hasFit) {
+  <div class="section-label">Steps from your phone</div>
+  <section class="card form">
+    @switch (stepsSync.link()) {
+      @case ('connected') { <p class="no-top">✅ Connected to Health Connect. Steps update each time you open the app.</p> }
+      @case ('needs-permission') {
+        <p class="no-top small ink-2">Let {{ appName }} read your daily steps from Health Connect (where Google Fit, Samsung Health or
+          your watch save them). Read only — nothing is written.</p>
+        <ion-button size="small" (click)="connectSteps()">Connect</ion-button>
+      }
+      @default { <p class="no-top small ink-2">{{ stepsSync.reason() || 'Checking…' }}</p> }
+    }
+  </section>
+  }
+
+  @if (drive.available) {
+    <div class="section-label">Google Drive</div>
+    <section class="card form">
+      @if (drive.on()) {
+        <p class="no-top">✅ A copy is kept in your Google Drive.</p>
+        <p class="small ink-2 no-top">
+          @if (drive.problem(); as problem) { <span class="err">{{ problem }}</span> }
+          @else if (drive.lastAt(); as at) { Last checked {{ when(at) }}. }
+          On a new phone, sign in here and everything comes back. Photos and videos are not included.
+        </p>
+        <div class="row">
+          <ion-button size="small" [disabled]="drive.busy()" (click)="syncDrive()">
+            @if (drive.busy()) { <ion-spinner name="dots" /> } @else { Sync now }
+          </ion-button>
+          <ion-button size="small" fill="clear" color="medium" (click)="drive.disconnect()">Turn off</ion-button>
+        </div>
+      } @else {
+        <p class="small ink-2 no-top">Keep a copy in <strong>your own</strong> Google Drive. New phone? Sign in and everything
+          comes back. Only this app can see the copy, and it can see nothing else in your Drive.</p>
+        <ion-button size="small" [disabled]="drive.busy()" (click)="connectDrive()">
+          @if (drive.busy()) { <ion-spinner name="dots" /> } @else { Sign in with Google }
+        </ion-button>
+      }
+    </section>
+  }
+
+  <div class="section-label">Backup file</div>
+  <section class="card form">
+    <p class="small ink-2 no-top">Your data lives on this {{ native ? 'phone' : 'phone, in this browser' }}.
+      @if (!drive.on()) { Save a backup file now and then so you never lose it. } Photos and videos are not included.</p>
+    <div class="row">
+      <ion-button size="small" fill="outline" [disabled]="working()" (click)="exportData()">Save backup</ion-button>
+      <label class="file-btn">
+        Restore backup
+        <input type="file" accept="application/json,.json" (change)="importData($event)" hidden />
+      </label>
+    </div>
+  </section>
+
+  <p class="about small muted">{{ appName }} · no account, no server — your data stays with you.
+    <a href="privacypolicy.html" target="_blank" rel="noopener">Privacy</a></p>
+  <ion-button expand="block" class="save-bottom" (click)="save()">Save</ion-button>
+  <div class="fab-space"></div>
+</ion-content>

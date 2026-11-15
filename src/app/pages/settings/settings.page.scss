@@ -1,0 +1,86 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--fw-ink-2);
+}
+
+.auto .ink-2 {
+  margin-left: 4px;
+}
+
+.choice {
+  min-height: 56px;
+  font-size: 13px;
+}
+
+.auto {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 8px 0 0;
+}
+
+.no-top {
+  margin-top: 0;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--fw-ink-2);
+  line-height: 1.6;
+}
+
+.form ion-button {
+  margin: 0;
+  align-self: flex-start;
+}
+
+.ok {
+  color: var(--fw-good-text);
+  font-weight: 600;
+}
+
+.err {
+  color: var(--fw-bad);
+  font-weight: 600;
+}
+
+.adv {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ion-color-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-primary);
+  color: var(--ion-color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.about {
+  text-align: center;
+  margin: 20px;
+}
+
+.save-bottom {
+  margin: 0 16px;
+}

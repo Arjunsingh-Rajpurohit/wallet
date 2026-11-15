@@ -1,0 +1,145 @@
+.nav {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--fw-card);
+  color: var(--fw-ink);
+  font-size: 20px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 1px var(--fw-border);
+}
+
+.nav:disabled {
+  opacity: 0.35;
+}
+
+.budget {
+  margin-top: 12px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.status.bad {
+  color: var(--fw-bad);
+  font-weight: 600;
+}
+
+.status a {
+  color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+.actions {
+  margin-top: 16px;
+}
+
+.cat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.cat-emoji {
+  font-size: 22px;
+  width: 32px;
+  text-align: center;
+  flex: none;
+}
+
+.cat-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.cat-head .num {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.cat-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.cat-bar {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--fw-wash);
+  overflow: hidden;
+}
+
+.cat-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--c-money);
+}
+
+.day-head {
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 20px 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--fw-ink-2);
+}
+
+.list {
+  padding: 4px 16px;
+  margin-top: 6px;
+}
+
+.expense {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--fw-border);
+  background: none;
+  color: var(--fw-ink);
+  text-align: left;
+  font: inherit;
+}
+
+.expense:last-child {
+  border-bottom: 0;
+}
+
+.exp-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exp-main strong {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bill-icon {
+  color: var(--fw-muted);
+  font-size: 18px;
+}
+
+.amount {
+  font-weight: 650;
+}

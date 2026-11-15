@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="big">Food</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="date-switch">
+    <button class="nav" (click)="move(-1)" aria-label="Previous day"><ion-icon name="chevron-back" /></button>
+    <strong>{{ label() }}</strong>
+    <button class="nav" [disabled]="isToday()" (click)="move(1)" aria-label="Next day"><ion-icon name="chevron-forward" /></button>
+  </div>
+
+  <section class="card">
+    <div class="sum-head">
+      <div>
+        <span class="stat-value num">{{ num(totals().kcal) }}</span>
+        <span class="ink-2"> / {{ num(goals().kcal) }} kcal</span>
+      </div>
+      <span class="small" [class.over]="totals().kcal > goals().kcal">
+        {{ totals().kcal > goals().kcal ? num(totals().kcal - goals().kcal) + ' over' : num(goals().kcal - totals().kcal) + ' left' }}
+      </span>
+    </div>
+    <div class="meter" style="--meter-color: var(--c-kcal)"><span [style.width.%]="pct(totals().kcal, goals().kcal)"></span></div>
+    <div class="macros">
+      <div><span class="small ink-2"><span class="dot" style="--dot-color: var(--c-protein)"></span> Protein</span>
+        <strong class="num">{{ num(totals().protein) }} <small>/ {{ goals().protein }} g</small></strong></div>
+      <div><span class="small ink-2">Carbs</span><strong class="num">{{ num(totals().carbs) }} <small>g</small></strong></div>
+      <div><span class="small ink-2">Fat</span><strong class="num">{{ num(totals().fat) }} <small>g</small></strong></div>
+    </div>
+  </section>
+
+  @for (g of groups(); track g.key) {
+    <section class="card meal">
+      <div class="card-title">
+        <span>{{ g.emoji }} {{ g.label }} @if (g.kcal) { <span class="muted kcal">{{ num(g.kcal) }} kcal</span> }</span>
+        <button class="link" (click)="act.addFood(date(), g.key)">+ Add</button>
+      </div>
+      @if (g.items.length) {
+        <ion-list class="flush">
+          @for (m of g.items; track m.id) {
+            <ion-item-sliding>
+              <ion-item class="plain" button [detail]="false" (click)="open(m)">
+                @if (m.photo) { <img class="thumb" slot="start" [fwSrc]="m.photo" alt="" /> }
+                <ion-label>
+                  <h3>{{ m.name }}</h3>
+                  <p>{{ m.portion ? m.portion + ' · ' : '' }}{{ m.protein }} g protein</p>
+                </ion-label>
+                <span slot="end" class="num item-kcal">{{ m.kcal }}</span>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="remove(m)">Delete</ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-list>
+      } @else {
+        <p class="small muted none">Nothing yet</p>
+      }
+    </section>
+  }
+
+  <button class="card ideas" (click)="act.ideas(date())">
+    <span class="emoji">🍽️</span>
+    <span class="ideas-text"><strong>What should I eat?</strong><span class="small ink-2">Ideas that fit what's left today</span></span>
+    <span class="chev">›</span>
+  </button>
+
+  <section class="card">
+    <div class="card-title">
+      <span>Calories · last 14 days</span>
+      @if (avgKcal()) { <span class="small ink-2">avg {{ num(avgKcal()) }}</span> }
+    </div>
+    <fw-chart kind="bar" [labels]="chartLabels()" [values]="chartValues()" color="--c-kcal"
+              [goal]="goals().kcal" unit="kcal" label="Calories eaten per day for the last 14 days" />
+  </section>
+
+  <div class="fab-space"></div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="act.addFood(date())" aria-label="Add food"><ion-icon name="add" /></ion-fab-button>
+  </ion-fab>
+</ion-content>

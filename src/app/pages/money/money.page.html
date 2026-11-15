@@ -1,0 +1,98 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="big">{{ home ? greeting() : 'Money' }}</ion-title>
+    @if (home) {
+      <ion-buttons slot="end">
+        <ion-button color="medium" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline" /></ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="date-switch">
+    <button class="nav" (click)="move(-1)" aria-label="Previous month"><ion-icon name="chevron-back" /></button>
+    <strong>{{ title() }}</strong>
+    <button class="nav" [disabled]="isThisMonth()" (click)="move(1)" aria-label="Next month"><ion-icon name="chevron-forward" /></button>
+  </div>
+
+  <section class="card">
+    <span class="stat-label">Spent</span>
+    <div class="hero-num num">{{ inr(total()) }}</div>
+    @if (budget(); as b) {
+      <div class="meter budget" [style.--meter-color]="total() > b ? 'var(--fw-bad)' : 'var(--c-money)'">
+        <span [style.width.%]="pct(total(), b)"></span>
+      </div>
+      @if (total() > b) {
+        <p class="status bad"><ion-icon name="alert-circle" /> {{ inr(total() - b) }} over your {{ inr(b) }} budget</p>
+      } @else {
+        <p class="status ink-2">{{ inr(b - total()) }} left of {{ inr(b) }}</p>
+      }
+    } @else {
+      <p class="status small"><a routerLink="/settings">Set a monthly budget</a> to see how much is left.</p>
+    }
+    <div class="grid-2 actions">
+      <button class="choice" (click)="act.addExpense()"><span class="emoji">✍️</span>Add expense</button>
+      <button class="choice" (click)="act.addExpense({ scan: 'camera' })"><span class="emoji">🧾</span>Scan bill</button>
+    </div>
+  </section>
+
+  @if (byCategory().length) {
+    <section class="card">
+      <div class="card-title">Where it went</div>
+      @for (c of byCategory(); track c.key) {
+        <div class="cat">
+          <span class="cat-emoji">{{ c.emoji }}</span>
+          <div class="cat-main">
+            <div class="cat-head">
+              <span>{{ c.label }} <span class="muted small">· {{ c.count }}</span></span>
+              <span class="num"><strong>{{ inr(c.total) }}</strong> <span class="muted small">{{ c.share }}%</span></span>
+            </div>
+            <div class="cat-bar"><span [style.width.%]="c.width"></span></div>
+          </div>
+        </div>
+      }
+    </section>
+
+    <section class="card">
+      <div class="card-title">Spending by day</div>
+      <fw-chart kind="bar" [labels]="daily().labels" [values]="daily().values" color="--c-money" unit="₹" label="Money spent each day" />
+    </section>
+  }
+
+  <section class="card">
+    <div class="card-title">Last 6 months</div>
+    <fw-chart kind="bar" [labels]="trend().labels" [values]="trend().values" color="--c-money" unit="₹"
+              [goal]="budget()" goalLabel="Budget" label="Money spent each month" [height]="160" />
+  </section>
+
+  @for (g of groups(); track g.date) {
+    <div class="day-head">
+      <span>{{ dayLabel(g.date) }}</span>
+      <span class="num">{{ inr(g.total) }}</span>
+    </div>
+    <div class="card list">
+      @for (e of g.items; track e.id) {
+        <button class="expense" (click)="edit(e)">
+          <span class="cat-emoji">{{ categoryOf(e.category).emoji }}</span>
+          <span class="exp-main">
+            <strong>{{ e.merchant || categoryOf(e.category).label }}</strong>
+            <span class="small ink-2">{{ paymentLabel(e) }}{{ e.note ? ' · ' + e.note : '' }}</span>
+          </span>
+          @if (e.bill) { <ion-icon name="receipt-outline" class="bill-icon" aria-label="Has bill photo" /> }
+          <span class="num amount">{{ inrExactly(e.amount) }}</span>
+        </button>
+      }
+    </div>
+  } @empty {
+    <div class="empty">
+      <span class="emoji">💸</span>
+      No expenses in {{ title() }} yet.<br />Tap <strong>+</strong> or scan a bill.
+    </div>
+  }
+
+  <div class="fab-space"></div>
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="act.addExpense()" aria-label="Add expense"><ion-icon name="add" /></ion-fab-button>
+  </ion-fab>
+</ion-content>

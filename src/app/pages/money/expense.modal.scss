@@ -1,0 +1,48 @@
+.amount {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 20px 20px 4px;
+}
+
+.rupee {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--fw-ink-2);
+}
+
+.bill-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--fw-wash);
+}
+
+.bill-text {
+  min-width: 0;
+}
+
+.actions {
+  margin-top: 8px;
+}
+
+.error {
+  color: var(--fw-bad);
+  font-weight: 550;
+  font-size: 14px;
+}
+
+.pad {
+  padding: 4px 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.center {
+  text-align: center;
+}

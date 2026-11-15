@@ -1,0 +1,147 @@
+<ion-content>
+  <header class="top">
+    <div>
+      <p class="date">{{ dateText() }}</p>
+      <h1>{{ greeting() }} 👋</h1>
+    </div>
+    <ion-button fill="clear" color="medium" routerLink="/settings" aria-label="Settings">
+      <ion-icon slot="icon-only" name="settings-outline" />
+    </ion-button>
+  </header>
+
+  @if (settings.needsSetup()) {
+    <button class="card setup" routerLink="/settings">
+      <span class="emoji">🎯</span>
+      <span class="setup-text">
+        <strong>Set your goals — 1 minute</strong>
+        <span class="small ink-2">Add your height, age and weight so calories and protein are worked out for you.</span>
+      </span>
+    </button>
+  }
+
+  <!-- Calories: the one big number of the day -->
+  <section class="card hero">
+    <fw-ring [value]="data().food.kcal" [max]="goals().kcal" color="--c-kcal" [size]="148" [stroke]="13">
+      <div>
+        <div class="hero-num num">{{ num(kcalLeft() < 0 ? -kcalLeft() : kcalLeft()) }}</div>
+        <div class="small ink-2">{{ kcalLeft() < 0 ? 'kcal over' : 'kcal left' }}</div>
+      </div>
+    </fw-ring>
+    <div class="hero-side">
+      <div class="small ink-2">Eaten <strong class="ink">{{ num(data().food.kcal) }}</strong> of {{ num(goals().kcal) }}</div>
+      <div class="macro">
+        <div class="macro-head"><span><span class="dot" style="--dot-color: var(--c-protein)"></span> Protein</span>
+          <span class="num">{{ num(data().food.protein) }} / {{ goals().protein }} g</span></div>
+        <div class="meter" style="--meter-color: var(--c-protein)"><span [style.width.%]="pct(data().food.protein, goals().protein)"></span></div>
+      </div>
+      <div class="macro-row small ink-2">
+        <span>Carbs <strong class="num ink">{{ num(data().food.carbs) }} g</strong></span>
+        <span>Fat <strong class="num ink">{{ num(data().food.fat) }} g</strong></span>
+      </div>
+      <div class="hero-actions">
+        <ion-button size="small" (click)="act.addFood()"><ion-icon slot="start" name="add" />Food</ion-button>
+        <ion-button size="small" fill="outline" (click)="act.addFood(undefined, undefined, 'photo')" aria-label="Snap food">
+          <ion-icon slot="icon-only" name="camera" />
+        </ion-button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tap a tile to log it -->
+  <div class="tiles">
+    <button class="card tile" (click)="act.logSteps()">
+      <span class="tile-label"><span class="dot" style="--dot-color: var(--c-steps)"></span> Steps</span>
+      <span class="stat-value num">{{ num(stepsToday()) }}</span>
+      <div class="meter" style="--meter-color: var(--c-steps)"><span [style.width.%]="pct(stepsToday(), goals().steps)"></span></div>
+      <span class="small ink-2">Goal {{ num(goals().steps) }}</span>
+    </button>
+
+    <button class="card tile" (click)="act.logWeight()">
+      <span class="tile-label"><span class="dot" style="--dot-color: var(--c-weight)"></span> Weight</span>
+      @if (weight(); as w) {
+        <span class="stat-value num">{{ dec1(w.kg) }} <small>kg</small></span>
+        @if (w.change !== null) {
+          <span class="small" [class.good]="w.towardsGoal === true" [class.ink-2]="w.towardsGoal !== true">
+            {{ w.change > 0 ? '▲' : w.change < 0 ? '▼' : '•' }} {{ dec1(w.change < 0 ? -w.change : w.change) }} kg this week
+          </span>
+        }
+        @if (w.toGoal !== null) {
+          <span class="small ink-2">{{ w.toGoal === 0 ? 'At your goal 🎉' : dec1(w.toGoal < 0 ? -w.toGoal : w.toGoal) + ' kg to goal' }}</span>
+        }
+      } @else {
+        <span class="stat-value muted">—</span>
+        <span class="small ink-2">Tap to log</span>
+      }
+    </button>
+
+    <button class="card tile" (click)="act.addWorkout()">
+      <span class="tile-label"><span class="dot" style="--dot-color: var(--c-workout)"></span> Workout</span>
+      <span class="stat-value num">{{ workoutMinutes() }} <small>min</small></span>
+      <span class="small ink-2">{{ workoutMinutes() ? num(workoutKcal()) + ' kcal burned' : 'Tap to add' }}</span>
+    </button>
+
+    @if (hasMoney) {
+      <button class="card tile" (click)="act.addExpense()">
+        <span class="tile-label"><span class="dot" style="--dot-color: var(--c-money)"></span> Spent today</span>
+        <span class="stat-value num">{{ inr(data().spentToday) }}</span>
+        @if (goals().budget; as budget) {
+          <div class="meter" style="--meter-color: var(--c-money)"><span [style.width.%]="pct(data().spentMonth, budget)"></span></div>
+          <span class="small" [class.bad]="data().spentMonth > budget">{{ inr(data().spentMonth) }} of {{ inr(budget) }} this month</span>
+        } @else {
+          <span class="small ink-2">{{ inr(data().spentMonth) }} this month</span>
+        }
+      </button>
+    } @else {
+      <button class="card tile" (click)="act.addProgress()">
+        <span class="tile-label"><span class="dot" style="--dot-color: var(--c-protein)"></span> Progress</span>
+        <span class="stat-value">🤳</span>
+        <span class="small ink-2">Add a photo of today</span>
+      </button>
+    }
+  </div>
+
+  <!-- Shortcuts for the camera features -->
+  <div class="section-label">Quick add</div>
+  <div class="grid-4 quick">
+    <button class="choice" (click)="act.addFood(undefined, undefined, 'photo')"><span class="emoji">📸</span>Snap food</button>
+    @if (hasMoney) {
+      <button class="choice" (click)="act.addExpense({ scan: 'camera' })"><span class="emoji">🧾</span>Scan bill</button>
+    } @else {
+      <button class="choice" (click)="act.logWeight()"><span class="emoji">⚖️</span>Log weight</button>
+    }
+    <button class="choice" (click)="act.addProgress()"><span class="emoji">🤳</span>Progress photo</button>
+    <button class="choice" (click)="act.ideas()"><span class="emoji">🍽️</span>What to eat?</button>
+  </div>
+
+  <!-- Routine -->
+  <section class="card">
+    <div class="card-title">
+      <span>Today's routine @if (data().routine.length) { <span class="muted count">{{ routineDone() }}/{{ data().routine.length }}</span> }</span>
+      <button class="link" (click)="act.addHabit()">+ Add</button>
+    </div>
+    @for (r of data().routine; track r.habit.id) {
+      <button class="habit" [class.done]="r.done" (click)="tick(r)">
+        <span class="check" aria-hidden="true">@if (r.done) { <ion-icon name="checkmark" /> }</span>
+        <span class="habit-name">{{ r.habit.emoji }} {{ r.habit.name }}</span>
+        @if (r.streak > 1) { <span class="streak">🔥 {{ r.streak }}</span> }
+      </button>
+    } @empty {
+      <p class="ink-2 small empty-routine">Build a daily routine — water, workout, sleep… Tick it off every day and watch your streak grow 🔥</p>
+      <ion-button size="small" fill="outline" (click)="act.addHabit()">Add your first habit</ion-button>
+    }
+  </section>
+
+  <!-- Next meal -->
+  <button class="card next-meal" (click)="act.ideas()">
+    <span class="emoji">🍽️</span>
+    <span class="next-text">
+      <strong>What should I eat next?</strong>
+      <span class="small ink-2">
+        @if (nextMeal().ideas[0]; as first) { Try {{ first.name }} — {{ first.why }} } @else { See ideas that fit your day }
+      </span>
+    </span>
+    <span class="chev" aria-hidden="true">›</span>
+  </button>
+
+  <div class="fab-space"></div>
+</ion-content>

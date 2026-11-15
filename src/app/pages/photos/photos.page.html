@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="big">Progress</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="top-actions">
+    <ion-button (click)="act.addProgress()"><ion-icon slot="start" name="add" />Add photo / video</ion-button>
+    @if (items().length >= 2) {
+      <ion-button [fill]="comparing() ? 'solid' : 'outline'" [color]="comparing() ? 'dark' : 'primary'" (click)="toggleCompare()">
+        <ion-icon slot="start" name="git-compare-outline" />{{ comparing() ? 'Cancel' : 'Compare' }}
+      </ion-button>
+    }
+  </div>
+
+  @if (comparing()) {
+    <p class="hint">Pick two to see them side by side — {{ picked().length }}/2 chosen.</p>
+  }
+
+  @if (items().length) {
+    <div class="grid">
+      @for (item of items(); track item.id) {
+        <button class="tile" [class.picked]="picked().includes(item.id!)" (click)="tap(item)">
+          <img [fwSrc]="item.kind === 'video' ? item.thumb : item.path" alt="" loading="lazy" />
+          @if (item.kind === 'video') { <span class="play"><ion-icon name="play" /></span> }
+          <span class="caption">
+            <span>{{ shortDay(item.date) }}</span>
+            @if (item.kg) { <span>{{ dec1(item.kg) }} kg</span> }
+          </span>
+          @if (picked().includes(item.id!)) { <span class="badge">{{ picked().indexOf(item.id!) + 1 }}</span> }
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="empty">
+      <span class="emoji">🤳</span>
+      <strong>See how far you've come</strong><br />
+      Take a photo every week or two — same spot, same light. Later, compare any two side by side.
+      <br /><br />
+      <ion-button (click)="act.addProgress()">Add your first photo</ion-button>
+    </div>
+  }
+  <p class="private small muted">🔒 Photos and videos stay on this phone. They are never uploaded.</p>
+  <div class="fab-space"></div>
+</ion-content>

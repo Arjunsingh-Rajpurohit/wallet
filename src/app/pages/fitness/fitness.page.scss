@@ -1,0 +1,124 @@
+.ranges {
+  padding-top: 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stats small {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fw-ink-2);
+}
+
+.bmi {
+  margin: 6px 0 0;
+}
+
+.chart-title {
+  margin-top: 18px;
+}
+
+.card ion-button {
+  margin-top: 14px;
+}
+
+.empty {
+  padding: 16px 4px;
+  text-align: left;
+}
+
+.list {
+  padding: 4px 16px;
+}
+
+.list h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+
+.list .emoji {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.hit {
+  color: var(--fw-good-text);
+}
+
+.sync {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sync .spacer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sync ion-button {
+  margin: 0;
+}
+
+.sync-icon {
+  font-size: 26px;
+  color: var(--c-steps);
+  flex: none;
+}
+
+.habit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--fw-border);
+  font-size: 16px;
+}
+
+.check {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--fw-axis);
+  background: none;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 18px;
+  flex: none;
+  padding: 0;
+}
+
+.habit.done .check {
+  background: var(--c-routine);
+  border-color: var(--c-routine);
+}
+
+.habit-name {
+  flex: 1;
+}
+
+.streak {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.trash {
+  background: none;
+  border: 0;
+  color: var(--fw-muted);
+  font-size: 18px;
+  padding: 6px;
+}

@@ -1,0 +1,172 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title class="big">Fitness</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="section()" (ionChange)="setSection($event.detail.value)" [scrollable]="true">
+      <ion-segment-button value="weight"><ion-label>Weight</ion-label></ion-segment-button>
+      <ion-segment-button value="steps"><ion-label>Steps</ion-label></ion-segment-button>
+      <ion-segment-button value="workouts"><ion-label>Workouts</ion-label></ion-segment-button>
+      <ion-segment-button value="routine"><ion-label>Routine</ion-label></ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="pills ranges">
+    @for (r of ranges; track r.days) {
+      <button class="pill" [class.on]="days() === r.days" (click)="days.set(r.days)">{{ r.label }}</button>
+    }
+  </div>
+
+  @switch (section()) {
+    @case ('weight') {
+      <section class="card">
+        @if (weightStats(); as w) {
+          <div class="stats">
+            <div><span class="stat-label">Now</span><span class="stat-value num">{{ dec1(w.kg) }} <small>kg</small></span></div>
+            <div><span class="stat-label">Change</span>
+              <span class="stat-value num">{{ w.change === null ? '—' : (w.change > 0 ? '+' : '') + dec1(w.change) }} <small>kg</small></span></div>
+            <div><span class="stat-label">To goal</span>
+              <span class="stat-value num">{{ w.toGoal === null ? '—' : dec1(abs(w.toGoal)) }} <small>{{ w.toGoal === null ? '' : 'kg' }}</small></span></div>
+          </div>
+          @if (w.bmi) { <p class="small ink-2 bmi">BMI {{ w.bmi }}</p> }
+        }
+        <div class="card-title chart-title">Weight</div>
+        @if (weightChart().values.length > 1) {
+          <fw-chart kind="line" [labels]="weightChart().labels" [values]="weightChart().values" color="--c-weight"
+                    [goal]="goals().goalWeightKg" goalLabel="Goal" unit="kg" [decimals]="1" [height]="200"
+                    label="Your weight over time" />
+        } @else {
+          <p class="empty small">Log your weight a few times to see the line. Once a week, same time of day, works best.</p>
+        }
+        <ion-button expand="block" (click)="act.logWeight()"><ion-icon slot="start" name="add" />Log weight</ion-button>
+      </section>
+
+      @if (data().weights.length) {
+        <div class="section-label">Weigh-ins</div>
+        <div class="card list"><ion-list class="flush">
+          @for (w of reversed(data().weights); track w.date) {
+            <ion-item-sliding>
+              <ion-item class="plain">
+                <ion-label>{{ dayLabel(w.date) }}</ion-label>
+                <strong slot="end" class="num">{{ dec1(w.kg) }} kg</strong>
+              </ion-item>
+              <ion-item-options side="end"><ion-item-option color="danger" (click)="removeWeight(w)">Delete</ion-item-option></ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-list></div>
+      }
+    }
+
+    @case ('steps') {
+      <section class="card">
+        <div class="stats">
+          <div><span class="stat-label">Today</span><span class="stat-value num">{{ num(stepStats().today) }}</span></div>
+          <div><span class="stat-label">Daily avg</span><span class="stat-value num">{{ num(stepStats().avg) }}</span></div>
+          <div><span class="stat-label">Goal hit</span><span class="stat-value num">{{ stepStats().hitGoal }} <small>days</small></span></div>
+        </div>
+        <div class="card-title chart-title">Steps <span class="small ink-2">{{ stepsChart().unit }}</span></div>
+        <fw-chart kind="bar" [labels]="stepsChart().labels" [values]="stepsChart().values" color="--c-steps"
+                  [goal]="goals().steps" unit="steps" label="Steps walked" />
+        <ion-button expand="block" fill="outline" (click)="act.logSteps()"><ion-icon slot="start" name="add" />Type today's steps</ion-button>
+      </section>
+
+      @if (native) {
+      <section class="card sync">
+        <ion-icon name="phone-portrait-outline" class="sync-icon" />
+        <div class="spacer">
+          @switch (stepsSync.link()) {
+            @case ('connected') { <strong>Steps come from your phone</strong><span class="small ink-2">Read from Health Connect each time you open the app.</span> }
+            @case ('needs-permission') { <strong>Count steps automatically</strong><span class="small ink-2">Allow the app to read steps from Health Connect.</span> }
+            @default { <strong>Phone step count</strong><span class="small ink-2">{{ stepsSync.reason() || 'Checking…' }}</span> }
+          }
+        </div>
+        @if (stepsSync.link() === 'connected' || stepsSync.link() === 'needs-permission') {
+          <ion-button size="small" [disabled]="syncing()" (click)="syncSteps()">
+            @if (syncing()) { <ion-spinner name="dots" /> } @else { {{ stepsSync.link() === 'connected' ? 'Sync' : 'Connect' }} }
+          </ion-button>
+        }
+      </section>
+      }
+
+      @if (recentSteps().length) {
+        <div class="section-label">Days</div>
+        <div class="card list"><ion-list class="flush">
+          @for (s of recentSteps(); track s.date) {
+            <ion-item-sliding>
+              <ion-item class="plain">
+                <ion-label>{{ dayLabel(s.date) }} @if (s.source === 'phone') { <span class="small muted">· phone</span> }</ion-label>
+                <strong slot="end" class="num" [class.hit]="s.steps >= goals().steps">{{ num(s.steps) }}</strong>
+              </ion-item>
+              <ion-item-options side="end"><ion-item-option color="danger" (click)="removeSteps(s)">Delete</ion-item-option></ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-list></div>
+      }
+    }
+
+    @case ('workouts') {
+      <section class="card">
+        <div class="stats">
+          <div><span class="stat-label">Sessions</span><span class="stat-value num">{{ workoutStats().sessions }}</span></div>
+          <div><span class="stat-label">Minutes</span><span class="stat-value num">{{ num(workoutStats().minutes) }}</span></div>
+          <div><span class="stat-label">Burned</span><span class="stat-value num">{{ num(workoutStats().kcal) }} <small>kcal</small></span></div>
+        </div>
+        <div class="card-title chart-title">Minutes trained <span class="small ink-2">{{ workoutChart().unit }}</span></div>
+        <fw-chart kind="bar" [labels]="workoutChart().labels" [values]="workoutChart().values" color="--c-workout"
+                  unit="min" label="Minutes of exercise" />
+        <ion-button expand="block" (click)="act.addWorkout()"><ion-icon slot="start" name="add" />Add workout</ion-button>
+      </section>
+
+      @if (data().workouts.length) {
+        <div class="section-label">Sessions</div>
+        <div class="card list"><ion-list class="flush">
+          @for (w of data().workouts; track w.id) {
+            <ion-item-sliding>
+              <ion-item class="plain">
+                <span slot="start" class="emoji">{{ workoutOf(w.type).emoji }}</span>
+                <ion-label>
+                  <h3>{{ workoutOf(w.type).label }} · {{ w.minutes }} min</h3>
+                  <p>{{ dayLabel(w.date) }}{{ w.note ? ' · ' + w.note : '' }}</p>
+                </ion-label>
+                <span slot="end" class="num small ink-2">{{ w.kcal }} kcal</span>
+              </ion-item>
+              <ion-item-options side="end"><ion-item-option color="danger" (click)="removeWorkout(w)">Delete</ion-item-option></ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-list></div>
+      }
+    }
+
+    @case ('routine') {
+      <section class="card">
+        <div class="card-title">
+          <span>Today</span>
+          <button class="link" (click)="act.addHabit()">+ Add habit</button>
+        </div>
+        @for (r of data().routine; track r.habit.id) {
+          <div class="habit" [class.done]="r.done">
+            <button class="check" (click)="tick(r)" [attr.aria-label]="(r.done ? 'Untick ' : 'Tick ') + r.habit.name">
+              @if (r.done) { <ion-icon name="checkmark" /> }
+            </button>
+            <span class="habit-name" (click)="tick(r)">{{ r.habit.emoji }} {{ r.habit.name }}</span>
+            <span class="streak">{{ r.streak ? '🔥 ' + r.streak : '' }}</span>
+            <button class="trash" (click)="removeHabit(r)" [attr.aria-label]="'Remove ' + r.habit.name"><ion-icon name="trash-outline" /></button>
+          </div>
+        } @empty {
+          <p class="small ink-2">No habits yet. Add a few you want to do every day.</p>
+        }
+      </section>
+
+      @if (data().routine.length) {
+        <section class="card">
+          <div class="card-title chart-title">Routine done <span class="small ink-2">avg {{ routineAvg() }}%</span></div>
+          <fw-chart kind="bar" [labels]="routineChart().labels" [values]="routineChart().values" color="--c-routine" [max]="100"
+                    unit="%" label="Share of your routine done each day" />
+        </section>
+      }
+    }
+  }
+  <div class="fab-space"></div>
+</ion-content>

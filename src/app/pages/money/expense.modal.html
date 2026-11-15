@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">Cancel</ion-button>
+    </ion-buttons>
+    <ion-title>{{ expense ? 'Edit expense' : 'Add expense' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [strong]="true" [disabled]="!(amount()! > 0)" (click)="save()">Save</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="amount">
+    <span class="rupee">₹</span>
+    <ion-input class="big-input" type="number" inputmode="decimal" placeholder="0" aria-label="Amount"
+               [ngModel]="amount()" (ngModelChange)="amount.set($event === '' || $event === null ? null : +$event)" />
+  </div>
+
+  <div class="card bill">
+    @if (bill()) {
+      <div class="row">
+        <img class="bill-thumb" [fwSrc]="bill()" alt="Bill photo" />
+        <div class="spacer bill-text">
+          @if (reading()) {
+            <span><ion-spinner name="dots" /> Reading bill…</span>
+          } @else if (readError()) {
+            <span class="error">{{ readError() }}</span>
+          } @else {
+            <span class="small ink-2">{{ readNote() || 'Bill photo attached' }}</span>
+          }
+        </div>
+      </div>
+      <div class="row actions">
+        <ion-button size="small" fill="outline" [disabled]="reading()" (click)="readBill()">Read again</ion-button>
+        <ion-button size="small" fill="clear" color="medium" (click)="removeBill()">Remove photo</ion-button>
+      </div>
+    } @else {
+      <div class="card-title">Have a bill? Let the phone read it</div>
+      <div class="grid-2">
+        <button class="choice" (click)="addBill('camera')"><span class="emoji">🧾</span>Scan bill</button>
+        <button class="choice" (click)="addBill('gallery')"><span class="emoji">🖼️</span>From gallery</button>
+      </div>
+      @if (readError()) { <p class="error">{{ readError() }}</p> }
+    }
+  </div>
+
+  <div class="section-label">Category</div>
+  <div class="grid-4 pad">
+    @for (c of categories; track c.key) {
+      <button class="choice" [class.on]="category() === c.key" (click)="category.set(c.key)">
+        <span class="emoji">{{ c.emoji }}</span>{{ c.label }}
+      </button>
+    }
+  </div>
+
+  <div class="section-label">Paid by</div>
+  <div class="pills">
+    @for (p of payments; track p.key) {
+      <button class="pill" [class.on]="payment() === p.key" (click)="payment.set(p.key)">{{ p.label }}</button>
+    }
+  </div>
+
+  <div class="card form">
+    <ion-input label="Shop / what for" labelPlacement="stacked" placeholder="e.g. D-Mart, Swiggy, petrol" [(ngModel)]="merchant" [maxlength]="60" />
+    <ion-input label="Date" labelPlacement="stacked" type="date" [max]="today" [(ngModel)]="when" />
+    <ion-input label="Note (optional)" labelPlacement="stacked" placeholder="Anything to remember" [(ngModel)]="note" [maxlength]="140" />
+  </div>
+
+  @if (expense) {
+    <div class="center"><ion-button fill="clear" color="danger" (click)="remove()">Delete expense</ion-button></div>
+  }
+  <div class="fab-space"></div>
+</ion-content>
