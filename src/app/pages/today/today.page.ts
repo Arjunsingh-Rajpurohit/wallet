@@ -1,7 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { IonButton, IonContent, IonIcon } from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonIcon } from '@ionic/angular/ion-icon';
 import { addIcons } from 'ionicons';
 import { add, camera, checkmark, settingsOutline } from 'ionicons/icons';
 import { addDays, dayKey, mealTypeNow, monthKey, parseDay } from '../../core/dates';
@@ -9,10 +11,13 @@ import { db, type StepEntry, type WeightEntry, type Workout } from '../../core/d
 import { dec1, inr, num, round1 } from '../../core/format';
 import { liveBy } from '../../core/live';
 import { suggestMeals } from '../../core/meal-ideas';
+import { GLASS_ML } from '../../core/profile';
+import { weekSummary, type WeekSummary } from '../../core/week';
 import { SettingsService } from '../../core/settings.service';
 import { HAS_MONEY } from '../../core/variant';
 import {
-  NO_TOTALS, mealsOn, routineOn, setHabitDone, spentBetween, sumMeals, weightsBetween, workoutsBetween,
+  NO_TOTALS, addWater, kcalByDay, mealsOn, routineOn, routineScore, setHabitDone, spentBetween, stepsBetween, sumMeals,
+  waterBetween, waterOn, weightsBetween, workoutsBetween,
   type HabitStatus, type Totals,
 } from '../../core/store';
 import { ActionsService } from '../../shared/actions.service';
@@ -26,9 +31,16 @@ interface TodayData {
   spentToday: number;
   spentMonth: number;
   routine: HabitStatus[];
+  waterMl: number;
+  week: WeekSummary;
 }
 
-const EMPTY: TodayData = { food: NO_TOTALS, steps: undefined, weights: [], workouts: [], spentToday: 0, spentMonth: 0, routine: [] };
+const EMPTY_WEEK: WeekSummary = {
+  kcalAvg: null, proteinAvg: null, kcalDays: 0, stepsAvg: null, workouts: 0, workoutMinutes: 0, waterAvgMl: null, weightChange: null, routinePct: null,
+};
+const EMPTY: TodayData = {
+  food: NO_TOTALS, steps: undefined, weights: [], workouts: [], spentToday: 0, spentMonth: 0, routine: [], waterMl: 0, week: EMPTY_WEEK,
+};
 
 @Component({
   selector: 'fw-today',
@@ -46,11 +58,14 @@ export class TodayPage {
 
   protected readonly today = signal(dayKey());
   protected readonly data = liveBy(this.today, async (d): Promise<TodayData> => {
-    const [meals, steps, weights, workouts, spentToday, spentMonth, routine] = await Promise.all([
+    const from = addDays(d, -6);
+    const [meals, steps, weights, workouts, spentToday, spentMonth, routine, waterMl, food7, steps7, workouts7, water7, routine7] = await Promise.all([
       mealsOn(d), db.steps.get(d), weightsBetween(addDays(d, -60), d), workoutsBetween(d, d),
-      spentBetween(d, d), spentBetween(`${monthKey(d)}-01`, d), routineOn(d),
+      HAS_MONEY ? spentBetween(d, d) : 0, HAS_MONEY ? spentBetween(`${monthKey(d)}-01`, d) : 0, routineOn(d), waterOn(d),
+      kcalByDay(from, d), stepsBetween(from, d), workoutsBetween(from, d), waterBetween(from, d), routineScore(from, d),
     ]);
-    return { food: sumMeals(meals), steps, weights, workouts, spentToday, spentMonth, routine };
+    const week = weekSummary({ from, to: d, food: food7, steps: steps7, workouts: workouts7, water: water7, weights, routine: routine7 });
+    return { food: sumMeals(meals), steps, weights, workouts, spentToday, spentMonth, routine, waterMl, week };
   }, EMPTY);
 
   protected readonly goals = this.settings.goals;
@@ -67,6 +82,29 @@ export class TodayPage {
   protected readonly stepsToday = computed(() => this.data().steps?.steps ?? 0);
   protected readonly workoutMinutes = computed(() => this.data().workouts.reduce((s, w) => s + w.minutes, 0));
   protected readonly workoutKcal = computed(() => this.data().workouts.reduce((s, w) => s + w.kcal, 0));
+  protected readonly glasses = computed(() => Math.round(this.data().waterMl / GLASS_ML));
+  protected readonly drops = computed(() => {
+    const goal = Math.min(16, Math.max(this.goals().water, this.glasses()));
+    return Array.from({ length: goal }, (_, i) => i < this.glasses());
+  });
+  /** Only what was really logged this week shows; nothing logged, no card. */
+  protected readonly week = computed(() => {
+    const w = this.data().week;
+    const goalKg = this.goals().goalWeightKg;
+    const latest = this.data().weights[this.data().weights.length - 1]?.kg;
+    const items: { emoji: string; value: string; label: string; good?: boolean }[] = [];
+    if (w.kcalAvg !== null) items.push({ emoji: '🍽️', value: num(w.kcalAvg), label: `kcal a day (${w.kcalDays} day${w.kcalDays === 1 ? '' : 's'})` });
+    if (w.proteinAvg !== null) items.push({ emoji: '💪', value: `${w.proteinAvg} g`, label: 'protein a day', good: w.proteinAvg >= this.goals().protein });
+    if (w.stepsAvg !== null) items.push({ emoji: '🚶', value: num(w.stepsAvg), label: 'steps a day', good: w.stepsAvg >= this.goals().steps });
+    if (w.workouts) items.push({ emoji: '🏋️', value: String(w.workouts), label: `workout${w.workouts === 1 ? '' : 's'} · ${w.workoutMinutes} min` });
+    if (w.waterAvgMl !== null) items.push({ emoji: '💧', value: dec1(w.waterAvgMl / GLASS_ML), label: 'glasses a day', good: w.waterAvgMl / GLASS_ML >= this.goals().water });
+    if (w.weightChange !== null) {
+      const towards = goalKg && latest ? (w.weightChange < 0) === (latest > goalKg) && w.weightChange !== 0 : false;
+      items.push({ emoji: '⚖️', value: `${w.weightChange > 0 ? '+' : ''}${dec1(w.weightChange)} kg`, label: 'weight', good: towards });
+    }
+    if (w.routinePct !== null) items.push({ emoji: '✅', value: `${w.routinePct}%`, label: 'routine done', good: w.routinePct >= 80 });
+    return items;
+  });
   protected readonly routineDone = computed(() => this.data().routine.filter((r) => r.done).length);
 
   protected readonly weight = computed(() => {
@@ -101,6 +139,11 @@ export class TodayPage {
   protected async tick(r: HabitStatus): Promise<void> {
     Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
     await setHabitDone(r.habit.id!, this.today(), !r.done);
+  }
+
+  protected async water(glasses: number): Promise<void> {
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
+    await addWater(this.today(), glasses * GLASS_ML);
   }
 
   protected pct(value: number, max: number): number {

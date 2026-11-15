@@ -1,5 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { IonButton, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar, ModalController } from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import { ModalController } from '@ionic/angular/modal-controller';
 import { addIcons } from 'ionicons';
 import { add, gitCompareOutline, play } from 'ionicons/icons';
 import { shortDay } from '../../core/dates';

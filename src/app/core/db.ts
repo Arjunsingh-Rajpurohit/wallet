@@ -65,7 +65,9 @@ export interface HabitCheck {
 
 export type ExpenseCategory =
   | 'food' | 'groceries' | 'transport' | 'shopping' | 'bills' | 'health'
-  | 'fitness' | 'fun' | 'rent' | 'education' | 'travel' | 'other';
+  | 'fitness' | 'fun' | 'rent' | 'education' | 'travel' | 'other'
+  // Money in.
+  | 'salary' | 'business' | 'gift' | 'refund' | 'interest';
 export type PaymentMethod = 'upi' | 'cash' | 'card' | 'other';
 
 export interface Expense {
@@ -77,7 +79,21 @@ export interface Expense {
   note?: string;
   payment: PaymentMethod;
   bill?: string;
+  /** 'in' = money that came in; absent = money spent. */
+  kind?: 'in';
+  /** "Repeat every month": the entries of one repeating series share this id… */
+  series?: string;
+  /** …the newest one carries it on while this is true… */
+  repeat?: boolean;
+  /** …on this day of the month (31 = the last day in shorter months). */
+  repeatDay?: number;
   createdAt: number;
+}
+
+/** Glasses of water drunk in a day, in ml. */
+export interface WaterEntry {
+  date: DayKey;
+  ml: number;
 }
 
 export interface ProgressItem {
@@ -106,6 +122,7 @@ export class FitWalletDb extends Dexie {
   habitChecks!: EntityTable<HabitCheck, 'id'>;
   expenses!: EntityTable<Expense, 'id'>;
   progress!: EntityTable<ProgressItem, 'id'>;
+  water!: EntityTable<WaterEntry, 'date'>;
   settings!: EntityTable<Setting, 'key'>;
 
   constructor(name = 'fitwallet') {
@@ -121,6 +138,7 @@ export class FitWalletDb extends Dexie {
       progress: '++id, date',
       settings: 'key',
     });
+    this.version(2).stores({ water: 'date' });
   }
 }
 

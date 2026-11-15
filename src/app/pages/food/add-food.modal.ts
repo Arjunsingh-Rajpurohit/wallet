@@ -1,10 +1,25 @@
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-  IonButton, IonButtons, IonCheckbox, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonItem, IonLabel,
-  IonList, IonSearchbar, IonSegment, IonSegmentButton, IonSpinner, IonTitle, IonToolbar, ModalController, ToastController,
-} from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonCheckbox } from '@ionic/angular/ion-checkbox';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonFooter } from '@ionic/angular/ion-footer';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonItem } from '@ionic/angular/ion-item';
+import { IonLabel } from '@ionic/angular/ion-label';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonSearchbar } from '@ionic/angular/ion-searchbar';
+import { IonSegment } from '@ionic/angular/ion-segment';
+import { IonSegmentButton } from '@ionic/angular/ion-segment-button';
+import { IonSpinner } from '@ionic/angular/ion-spinner';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import { ModalController } from '@ionic/angular/modal-controller';
+import { ToastController } from '@ionic/angular/toast-controller';
 import { addIcons } from 'ionicons';
 import { addCircle, remove, add, sparkles } from 'ionicons/icons';
 import { AiService, type ScannedFood } from '../../core/ai.service';

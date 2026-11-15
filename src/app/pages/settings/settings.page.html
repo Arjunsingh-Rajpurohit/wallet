@@ -81,6 +81,8 @@
     <div class="grid-2">
       <ion-input label="Steps a day" labelPlacement="stacked" type="number" inputmode="numeric"
                  [ngModel]="draft().stepGoal" (ngModelChange)="set('stepGoal', $event)" />
+      <ion-input label="Water (glasses a day)" labelPlacement="stacked" type="number" inputmode="numeric"
+                 [ngModel]="draft().waterGoal" (ngModelChange)="set('waterGoal', $event)" />
       @if (hasMoney) {
         <ion-input label="Monthly budget (₹)" labelPlacement="stacked" type="number" inputmode="numeric" placeholder="optional"
                    [ngModel]="draft().monthlyBudget" (ngModelChange)="set('monthlyBudget', $event)" />
@@ -165,6 +167,7 @@
       @if (!drive.on()) { Save a backup file now and then so you never lose it. } Photos and videos are not included.</p>
     <div class="row">
       <ion-button size="small" fill="outline" [disabled]="working()" (click)="exportData()">Save backup</ion-button>
+      @if (hasMoney) { <ion-button size="small" fill="outline" [disabled]="working()" (click)="exportCsv()">Excel sheet</ion-button> }
       <label class="file-btn">
         Restore backup
         <input type="file" accept="application/json,.json" (change)="importData($event)" hidden />

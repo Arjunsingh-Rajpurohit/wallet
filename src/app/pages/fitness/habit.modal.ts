@@ -1,6 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IonButton, IonContent, IonInput, ModalController } from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonInput } from '@ionic/angular/ion-input';
+import { ModalController } from '@ionic/angular/modal-controller';
 import { HABIT_IDEAS } from '../../core/catalog';
 import { dayKey } from '../../core/dates';
 import { addHabit } from '../../core/store';

@@ -1,5 +1,9 @@
 import { Component } from '@angular/core';
-import { IonIcon, IonLabel, IonTabBar, IonTabButton, IonTabs } from '@ionic/angular';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonLabel } from '@ionic/angular/ion-label';
+import { IonTabBar } from '@ionic/angular/ion-tab-bar';
+import { IonTabButton } from '@ionic/angular/ion-tab-button';
+import { IonTabs } from '@ionic/angular/ion-tabs';
 import { addIcons } from 'ionicons';
 import { HAS_FIT, HAS_MONEY } from '../../core/variant';
 import { barbell, barbellOutline, home, homeOutline, images, imagesOutline, restaurant, restaurantOutline, wallet, walletOutline } from 'ionicons/icons';
@@ -7,9 +11,11 @@ import { barbell, barbellOutline, home, homeOutline, images, imagesOutline, rest
 @Component({
   selector: 'fw-tabs',
   imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
+  // One screen needs no tab bar. A class, not [hidden]: Ionic shows the bar again when the keyboard closes.
+  styles: `ion-tab-bar.single { display: none; }`,
   template: `
     <ion-tabs>
-      <ion-tab-bar slot="bottom" [hidden]="tabs.length < 2">
+      <ion-tab-bar slot="bottom" [class.single]="tabs.length < 2">
         @for (tab of tabs; track tab.key) {
           <ion-tab-button [tab]="tab.key">
             <ion-icon [name]="tab.icon" />

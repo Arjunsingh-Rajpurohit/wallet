@@ -1,13 +1,25 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonInputPasswordToggle, IonSelect,
-  IonSelectOption, IonSpinner, IonTitle, IonToggle, IonToolbar, NavController,
-} from '@ionic/angular';
+import { IonBackButton } from '@ionic/angular/ion-back-button';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonInputPasswordToggle } from '@ionic/angular/ion-input-password-toggle';
+import { IonSelect } from '@ionic/angular/ion-select';
+import { IonSelectOption } from '@ionic/angular/ion-select-option';
+import { IonSpinner } from '@ionic/angular/ion-spinner';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToggle } from '@ionic/angular/ion-toggle';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import { NavController } from '@ionic/angular/nav-controller';
 import { AiService } from '../../core/ai.service';
 import { Capacitor } from '@capacitor/core';
 import { BackupService } from '../../core/backup.service';
+import { PAYMENTS, categoryOf } from '../../core/catalog';
 import { dayKey } from '../../core/dates';
+import { isIn, toCsv } from '../../core/money';
 import { db } from '../../core/db';
 import { DriveService } from '../../core/drive.service';
 import { num } from '../../core/format';
@@ -18,7 +30,7 @@ import { logWeight } from '../../core/store';
 import { APP_NAME, HAS_FIT, HAS_MONEY, HOME } from '../../core/variant';
 import { ActionsService } from '../../shared/actions.service';
 
-const NUMERIC: (keyof Profile)[] = ['birthYear', 'heightCm', 'goalWeightKg', 'calorieGoal', 'proteinGoal', 'stepGoal', 'monthlyBudget'];
+const NUMERIC: (keyof Profile)[] = ['birthYear', 'heightCm', 'goalWeightKg', 'calorieGoal', 'proteinGoal', 'stepGoal', 'waterGoal', 'monthlyBudget'];
 
 @Component({
   selector: 'fw-settings',
@@ -88,6 +100,7 @@ export class SettingsPage implements OnInit {
       calorieGoal: p.calorieGoal || DEFAULT_PROFILE.calorieGoal,
       proteinGoal: p.proteinGoal || DEFAULT_PROFILE.proteinGoal,
       stepGoal: p.stepGoal || DEFAULT_PROFILE.stepGoal,
+      waterGoal: p.waterGoal > 0 ? Math.min(40, Math.round(p.waterGoal)) : DEFAULT_PROFILE.waterGoal,
       monthlyBudget: p.monthlyBudget && p.monthlyBudget > 0 ? p.monthlyBudget : null,
     };
     await this.settings.saveProfile(clean);
@@ -157,6 +170,23 @@ export class SettingsPage implements OnInit {
       await this.backup.export();
     } catch (e) {
       await this.act.toast(`Backup failed: ${(e as Error).message}`, 'error');
+    } finally {
+      this.working.set(false);
+    }
+  }
+
+  /** Every entry as a sheet Excel opens. */
+  protected async exportCsv(): Promise<void> {
+    this.working.set(true);
+    try {
+      const rows = await db.expenses.toArray();
+      if (!rows.length) return void (await this.act.toast('Nothing to export yet'));
+      const csv = toCsv(rows, (e) => ({
+        category: categoryOf(e.category, isIn(e)).label, payment: PAYMENTS.find((x) => x.key === e.payment)?.label ?? '',
+      }));
+      await this.backup.saveFile(`${APP_NAME.toLowerCase()}-${dayKey()}.csv`, csv, 'text/csv');
+    } catch (e) {
+      await this.act.toast(`Export failed: ${(e as Error).message}`, 'error');
     } finally {
       this.working.set(false);
     }

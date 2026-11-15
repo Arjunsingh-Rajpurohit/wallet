@@ -47,18 +47,20 @@ export class BackupService {
   }
 
   async export(): Promise<void> {
-    const json = await this.snapshot();
-    const name = `${APP_NAME.toLowerCase()}-backup-${dayKey()}.json`;
+    await this.saveFile(`${APP_NAME.toLowerCase()}-backup-${dayKey()}.json`, await this.snapshot(), 'application/json');
+  }
 
+  /** Hands a file to the person: a download in the browser, the share sheet in the phone app. */
+  async saveFile(name: string, text: string, mime: string): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+      a.href = URL.createObjectURL(new Blob([text], { type: mime }));
       a.download = name;
       a.click();
       return;
     }
-    const saved = await Filesystem.writeFile({ path: name, data: json, directory: Directory.Cache, encoding: Encoding.UTF8 });
-    await Share.share({ title: `${APP_NAME} backup`, files: [saved.uri] });
+    const saved = await Filesystem.writeFile({ path: name, data: text, directory: Directory.Cache, encoding: Encoding.UTF8 });
+    await Share.share({ title: name, files: [saved.uri] });
   }
 
   /**

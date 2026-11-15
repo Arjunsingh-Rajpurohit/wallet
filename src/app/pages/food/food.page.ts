@@ -1,8 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import {
-  ActionSheetController, AlertController, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem,
-  IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonList, IonTitle, IonToolbar,
-} from '@ionic/angular';
+import { ActionSheetController } from '@ionic/angular/action-sheet-controller';
+import { AlertController } from '@ionic/angular/alert-controller';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonFab } from '@ionic/angular/ion-fab';
+import { IonFabButton } from '@ionic/angular/ion-fab-button';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonItem } from '@ionic/angular/ion-item';
+import { IonItemOption } from '@ionic/angular/ion-item-option';
+import { IonItemOptions } from '@ionic/angular/ion-item-options';
+import { IonItemSliding } from '@ionic/angular/ion-item-sliding';
+import { IonLabel } from '@ionic/angular/ion-label';
+import { IonList } from '@ionic/angular/ion-list';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
 import { addIcons } from 'ionicons';
 import { add, chevronBack, chevronForward } from 'ionicons/icons';
 import { MEAL_TYPES } from '../../core/catalog';

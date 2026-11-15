@@ -1,8 +1,13 @@
 import { Component, Input, inject, signal, OnInit } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import {
-  AlertController, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonToolbar, ModalController,
-} from '@ionic/angular';
+import { AlertController } from '@ionic/angular/alert-controller';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import { ModalController } from '@ionic/angular/modal-controller';
 import { addIcons } from 'ionicons';
 import { createOutline, play, trashOutline } from 'ionicons/icons';
 import { dayLabel } from '../../core/dates';

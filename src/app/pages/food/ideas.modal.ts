@@ -1,5 +1,10 @@
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
-import { IonButton, IonContent, IonIcon, IonSpinner, ModalController, ToastController } from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonIcon } from '@ionic/angular/ion-icon';
+import { IonSpinner } from '@ionic/angular/ion-spinner';
+import { ModalController } from '@ionic/angular/modal-controller';
+import { ToastController } from '@ionic/angular/toast-controller';
 import { addIcons } from 'ionicons';
 import { sparkles } from 'ionicons/icons';
 import { AiService, type AiMealIdea } from '../../core/ai.service';

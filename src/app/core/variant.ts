@@ -15,7 +15,7 @@ export const HOME = HAS_FIT ? '/tabs/today' : '/tabs/money';
 
 /** The tables this app owns; "settings" (name, goals, budget) belongs to all. */
 export const TABLES: readonly string[] = [
-  ...(HAS_FIT ? ['meals', 'weights', 'steps', 'workouts', 'habits', 'habitChecks', 'progress'] : []),
+  ...(HAS_FIT ? ['meals', 'weights', 'steps', 'workouts', 'habits', 'habitChecks', 'progress', 'water'] : []),
   ...(HAS_MONEY ? ['expenses'] : []),
   'settings',
 ];

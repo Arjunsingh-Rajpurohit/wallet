@@ -100,6 +100,21 @@
     }
   </div>
 
+  <!-- Water: one tap per glass -->
+  <section class="card water">
+    <div class="water-head">
+      <span class="tile-label"><span class="dot" style="--dot-color: var(--c-steps)"></span> Water</span>
+      <span class="small ink-2"><strong class="num ink">{{ glasses() }}</strong> of {{ goals().water }} glasses{{ glasses() >= goals().water ? ' 🎉' : '' }}</span>
+    </div>
+    <div class="water-row">
+      <div class="drops" aria-hidden="true">
+        @for (full of drops(); track $index) { <span class="drop" [class.full]="full"></span> }
+      </div>
+      <button class="round" [disabled]="!glasses()" (click)="water(-1)" aria-label="Take one glass back">−</button>
+      <button class="round add" (click)="water(1)" aria-label="Add a glass of water">+</button>
+    </div>
+  </section>
+
   <!-- Shortcuts for the camera features -->
   <div class="section-label">Quick add</div>
   <div class="grid-4 quick">
@@ -130,6 +145,22 @@
       <ion-button size="small" fill="outline" (click)="act.addHabit()">Add your first habit</ion-button>
     }
   </section>
+
+  <!-- The last seven days in a few numbers -->
+  @if (week().length) {
+    <section class="card">
+      <div class="card-title"><span>Last 7 days</span></div>
+      <div class="week">
+        @for (w of week(); track w.label) {
+          <div class="week-item">
+            <span class="week-emoji">{{ w.emoji }}</span>
+            <strong class="num" [class.good]="w.good">{{ w.value }}</strong>
+            <span class="small ink-2">{{ w.label }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  }
 
   <!-- Next meal -->
   <button class="card next-meal" (click)="act.ideas()">

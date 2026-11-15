@@ -29,6 +29,10 @@ jobs:
       - run: npm ci
       - run: npx ng test --watch=false
       - run: npx ng build --base-href /wallet/ --deploy-url "$FILES"
+      # Every file of the app, so the phone can keep them all for offline use.
+      - name: List the files
+        working-directory: dist/fitwallet/browser
+        run: ls *.js *.css | node -e "console.log(JSON.stringify(require('fs').readFileSync(0,'utf8').trim().split('\n')))" > files.json
       - name: Put the built files on the "site" branch
         working-directory: dist/fitwallet/browser
         run: |

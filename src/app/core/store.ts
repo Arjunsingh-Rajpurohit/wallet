@@ -1,7 +1,8 @@
-import { addDays, daysBetween } from './dates';
+import { addDays, dayKey, daysBetween } from './dates';
+import { dueRepeats, totals } from './money';
 import {
   db, type DayKey, type Expense, type Habit, type Meal, type ProgressItem, type StepEntry,
-  type WeightEntry, type Workout,
+  type WaterEntry, type WeightEntry, type Workout,
 } from './db';
 
 /* ---------- Reads (wrap in live() so screens refresh on every save) ---------- */
@@ -50,8 +51,12 @@ export const expensesBetween = (from: DayKey, to: DayKey): Promise<Expense[]> =>
     .then((rows) => rows.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt));
 
 export async function spentBetween(from: DayKey, to: DayKey): Promise<number> {
-  return (await db.expenses.where('date').between(from, to, true, true).toArray()).reduce((s, e) => s + e.amount, 0);
+  return totals(await db.expenses.where('date').between(from, to, true, true).toArray()).spent;
 }
+
+export const waterOn = (date: DayKey): Promise<number> => db.water.get(date).then((w) => w?.ml ?? 0);
+export const waterBetween = (from: DayKey, to: DayKey): Promise<WaterEntry[]> =>
+  db.water.where('date').between(from, to, true, true).toArray();
 
 export interface HabitStatus {
   habit: Habit;
@@ -139,6 +144,31 @@ export async function setHabitDone(habitId: number, date: DayKey, done: boolean)
 export const addExpense = (e: Omit<Expense, 'id' | 'createdAt'>) => db.expenses.add({ ...e, createdAt: Date.now() });
 export const updateExpense = (id: number, changes: Partial<Expense>) => db.expenses.update(id, changes);
 export const deleteExpense = (id: number) => db.expenses.delete(id);
+
+/** Ends a "repeat every month" series: what is already in the list stays, nothing new is added. */
+export async function stopSeries(series: string): Promise<void> {
+  const rows = await db.expenses.filter((e) => e.series === series && !!e.repeat).toArray();
+  await db.expenses.bulkPut(rows.map(({ repeat: _r, ...e }) => e));
+}
+
+/** Adds (or with a minus, takes back) water for a day; never below zero. */
+export async function addWater(date: DayKey, ml: number): Promise<void> {
+  await db.transaction('rw', db.water, async () => {
+    const now = (await db.water.get(date))?.ml ?? 0;
+    const next = Math.max(0, now + ml);
+    if (next) await db.water.put({ date, ml: next });
+    else await db.water.delete(date);
+  });
+}
+
+/** "Repeat every month" entries that came due since the app was last open. Returns how many were added. */
+export async function addDueRepeats(today: DayKey = dayKey()): Promise<number> {
+  return db.transaction('rw', db.expenses, async () => {
+    const due = dueRepeats(await db.expenses.filter((e) => !!e.series).toArray(), today);
+    if (due.length) await db.expenses.bulkAdd(due);
+    return due.length;
+  });
+}
 
 export const addProgress = (p: Omit<ProgressItem, 'id' | 'createdAt'>) => db.progress.add({ ...p, createdAt: Date.now() });
 export const deleteProgress = (id: number) => db.progress.delete(id);

@@ -1,16 +1,24 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  AlertController, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar,
-  ModalController, ToastController,
-} from '@ionic/angular';
+import { AlertController } from '@ionic/angular/alert-controller';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonButtons } from '@ionic/angular/ion-buttons';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonHeader } from '@ionic/angular/ion-header';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonSpinner } from '@ionic/angular/ion-spinner';
+import { IonTitle } from '@ionic/angular/ion-title';
+import { IonToolbar } from '@ionic/angular/ion-toolbar';
+import { ModalController } from '@ionic/angular/modal-controller';
+import { ToastController } from '@ionic/angular/toast-controller';
 import { BillScanService } from '../../core/bill-scan.service';
-import { CATEGORIES, PAYMENTS } from '../../core/catalog';
+import { CATEGORIES, INCOME_CATEGORIES, PAYMENTS } from '../../core/catalog';
 import { dayKey } from '../../core/dates';
 import type { DayKey, Expense, ExpenseCategory, PaymentMethod } from '../../core/db';
-import { inr } from '../../core/format';
+import { inr, newId } from '../../core/format';
+import { isIn } from '../../core/money';
 import { MediaService, MediaSrcDirective, type MediaSource } from '../../core/media.service';
-import { addExpense, deleteExpense, updateExpense } from '../../core/store';
+import { addExpense, deleteExpense, stopSeries, updateExpense } from '../../core/store';
 
 @Component({
   selector: 'fw-expense',
@@ -29,7 +37,13 @@ export class ExpenseModal implements OnInit {
   private readonly media = inject(MediaService);
   private readonly bills = inject(BillScanService);
 
-  protected readonly categories = CATEGORIES;
+  protected readonly moneyIn = signal(false);
+  protected readonly categories = computed(() => (this.moneyIn() ? INCOME_CATEGORIES : CATEGORIES));
+  protected readonly repeat = signal(false);
+  protected readonly dayOfMonth = computed(() => {
+    const d = Number((this.when() || this.today).slice(8));
+    return `${d}${d % 10 === 1 && d !== 11 ? 'st' : d % 10 === 2 && d !== 12 ? 'nd' : d % 10 === 3 && d !== 13 ? 'rd' : 'th'}`;
+  });
   protected readonly payments = PAYMENTS;
   protected readonly today = dayKey();
 
@@ -50,6 +64,8 @@ export class ExpenseModal implements OnInit {
     this.when.set(e?.date ?? this.date);
     if (e) {
       this.amount.set(e.amount);
+      this.moneyIn.set(isIn(e));
+      this.repeat.set(!!e.repeat);
       this.category.set(e.category);
       this.merchant.set(e.merchant ?? '');
       this.payment.set(e.payment);
@@ -58,6 +74,12 @@ export class ExpenseModal implements OnInit {
       this.originalBill = e.bill;
     }
     if (this.scan) await this.addBill(this.scan);
+  }
+
+  protected setKind(moneyIn: boolean): void {
+    if (moneyIn === this.moneyIn()) return;
+    this.moneyIn.set(moneyIn);
+    this.category.set(moneyIn ? 'salary' : 'food');
   }
 
   protected async addBill(source: MediaSource): Promise<void> {
@@ -102,11 +124,20 @@ export class ExpenseModal implements OnInit {
   protected async save(): Promise<void> {
     const amount = Math.round(Number(this.amount()) * 100) / 100;
     if (!(amount > 0)) return;
+    const date = this.when() || this.today;
+    const moneyIn = this.moneyIn();
     const data = {
-      date: this.when() || this.today, amount, category: this.category(), payment: this.payment(),
-      merchant: this.merchant().trim() || undefined, note: this.note().trim() || undefined, bill: this.bill() ?? undefined,
+      date, amount, category: this.category(), payment: this.payment(),
+      merchant: this.merchant().trim() || undefined, note: this.note().trim() || undefined,
+      bill: moneyIn ? undefined : this.bill() ?? undefined,
+      kind: moneyIn ? ('in' as const) : undefined,
+      // Ticking Repeat starts a series (or carries the old one on); unticking ends it here.
+      repeat: this.repeat() || undefined,
+      series: this.repeat() ? this.expense?.series ?? newId() : this.expense?.series,
+      repeatDay: this.repeat() ? Number(date.slice(8)) : undefined,
     };
     if (this.expense?.id) {
+      if (this.expense.series && !this.repeat()) await stopSeries(this.expense.series);
       await updateExpense(this.expense.id, data);
       // The old bill photo was replaced or removed.
       if (this.originalBill && this.originalBill !== data.bill) await this.media.remove(this.originalBill);
@@ -120,11 +151,13 @@ export class ExpenseModal implements OnInit {
   protected async remove(): Promise<void> {
     if (!this.expense?.id) return;
     const a = await this.alerts.create({
-      header: 'Delete this expense?', message: `${inr(this.expense.amount)} will be removed.`,
+      header: 'Delete this?',
+      message: `${inr(this.expense.amount)} will be removed.${this.expense.repeat ? ' It also stops repeating.' : ''}`,
       buttons: [{ text: 'Cancel', role: 'cancel' }, { text: 'Delete', role: 'confirm' }],
     });
     await a.present();
     if ((await a.onDidDismiss()).role !== 'confirm') return;
+    if (this.expense.series) await stopSeries(this.expense.series);
     await deleteExpense(this.expense.id);
     await this.media.remove(this.originalBill, this.bill() ?? undefined);
     await this.modalCtrl.dismiss(true);

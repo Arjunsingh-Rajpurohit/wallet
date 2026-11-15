@@ -1,15 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { ActionSheetController, AlertController, ModalController, ToastController } from '@ionic/angular';
+import { ActionSheetController } from '@ionic/angular/action-sheet-controller';
+import { AlertController } from '@ionic/angular/alert-controller';
+import { ModalController } from '@ionic/angular/modal-controller';
+import { ToastController } from '@ionic/angular/toast-controller';
 import { dayKey, mealTypeNow } from '../core/dates';
 import { db, type DayKey, type Expense, type MealType } from '../core/db';
 import { dec1, num } from '../core/format';
 import { MediaService, type MediaSource } from '../core/media.service';
 import { addProgress, logSteps, logWeight } from '../core/store';
-import { AddFoodModal } from '../pages/food/add-food.modal';
-import { IdeasModal } from '../pages/food/ideas.modal';
-import { HabitModal } from '../pages/fitness/habit.modal';
-import { WorkoutModal } from '../pages/fitness/workout.modal';
-import { ExpenseModal } from '../pages/money/expense.modal';
 
 /** Every "add something" flow, so Today's shortcuts and each tab open exactly the same screens. */
 @Injectable({ providedIn: 'root' })
@@ -38,23 +36,23 @@ export class ActionsService {
   }
 
   async addFood(date: DayKey = dayKey(), type: MealType = mealTypeNow(), start: 'search' | 'photo' | 'custom' = 'search'): Promise<void> {
-    await this.open(AddFoodModal, { date, type, start });
+    await this.open(() => import('../pages/food/add-food.modal').then((m) => m.AddFoodModal), { date, type, start });
   }
 
   async ideas(date: DayKey = dayKey()): Promise<void> {
-    await this.open(IdeasModal, { date }, true);
+    await this.open(() => import('../pages/food/ideas.modal').then((m) => m.IdeasModal), { date }, true);
   }
 
   async addWorkout(date: DayKey = dayKey()): Promise<void> {
-    await this.open(WorkoutModal, { date }, true);
+    await this.open(() => import('../pages/fitness/workout.modal').then((m) => m.WorkoutModal), { date }, true);
   }
 
   async addHabit(): Promise<void> {
-    await this.open(HabitModal, {}, true);
+    await this.open(() => import('../pages/fitness/habit.modal').then((m) => m.HabitModal), {}, true);
   }
 
   async addExpense(options: { date?: DayKey; expense?: Expense; scan?: MediaSource } = {}): Promise<void> {
-    await this.open(ExpenseModal, { date: options.date ?? dayKey(), expense: options.expense, scan: options.scan });
+    await this.open(() => import('../pages/money/expense.modal').then((m) => m.ExpenseModal), { date: options.date ?? dayKey(), expense: options.expense, scan: options.scan });
   }
 
   async logWeight(date: DayKey = dayKey()): Promise<void> {
@@ -99,9 +97,10 @@ export class ActionsService {
     }
   }
 
-  private async open(component: unknown, componentProps: object, sheet = false): Promise<void> {
+  /** Each form is fetched the first time it is opened, so the app itself starts light. */
+  private async open(load: () => Promise<unknown>, componentProps: object, sheet = false): Promise<void> {
     const modal = await this.modals.create({
-      component: component as never,
+      component: (await load()) as never,
       componentProps,
       ...(sheet ? { breakpoints: [0, 1], initialBreakpoint: 1, cssClass: 'sheet', handle: true } : {}),
     });

@@ -18,6 +18,8 @@ export interface Profile {
   calorieGoal: number;
   proteinGoal: number;
   stepGoal: number;
+  /** Glasses of water a day (one glass = 250 ml). */
+  waterGoal: number;
   monthlyBudget: number | null;
 }
 
@@ -34,6 +36,7 @@ export const DEFAULT_PROFILE: Profile = {
   calorieGoal: 2000,
   proteinGoal: 60,
   stepGoal: 8000,
+  waterGoal: 8,
   monthlyBudget: null,
 };
 
@@ -58,10 +61,15 @@ export const DIETS: { key: Diet; label: string }[] = [
   { key: 'vegan', label: 'Vegan' },
 ];
 
+/** One glass of water. */
+export const GLASS_ML = 250;
+
 export interface Goals {
   kcal: number;
   protein: number;
   steps: number;
+  /** Glasses of water a day. */
+  water: number;
   budget: number | null;
   goalWeightKg: number | null;
 }
@@ -95,6 +103,7 @@ export function goalsFor(p: Profile, weightKg: number | null, year = new Date().
     kcal: autoKcal ?? p.calorieGoal,
     protein: autoProtein ?? p.proteinGoal,
     steps: p.stepGoal,
+    water: p.waterGoal || 8,
     budget: p.monthlyBudget,
     goalWeightKg: p.goalWeightKg,
   };

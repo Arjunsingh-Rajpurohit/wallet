@@ -41,6 +41,15 @@ export const CATEGORIES: { key: ExpenseCategory; label: string; emoji: string }[
   { key: 'other', label: 'Other', emoji: '📦' },
 ];
 
+export const INCOME_CATEGORIES: { key: ExpenseCategory; label: string; emoji: string }[] = [
+  { key: 'salary', label: 'Salary', emoji: '💼' },
+  { key: 'business', label: 'Business', emoji: '🏪' },
+  { key: 'gift', label: 'Gift', emoji: '🎁' },
+  { key: 'refund', label: 'Refund', emoji: '↩️' },
+  { key: 'interest', label: 'Interest', emoji: '🏦' },
+  { key: 'other', label: 'Other', emoji: '💰' },
+];
+
 export const PAYMENTS: { key: PaymentMethod; label: string }[] = [
   { key: 'upi', label: 'UPI' },
   { key: 'cash', label: 'Cash' },
@@ -66,5 +75,7 @@ export function fitsDiet(food: Diet, person: Diet): boolean {
   return DIET_RANK[food] <= DIET_RANK[person];
 }
 
-export const categoryOf = (key: ExpenseCategory) => CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[CATEGORIES.length - 1];
+export const categoryOf = (key: ExpenseCategory, moneyIn = false) =>
+  (moneyIn ? INCOME_CATEGORIES : CATEGORIES).find((c) => c.key === key)
+  ?? INCOME_CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[CATEGORIES.length - 1];
 export const workoutOf = (key: WorkoutType) => WORKOUT_TYPES.find((w) => w.key === key) ?? WORKOUT_TYPES[WORKOUT_TYPES.length - 1];

@@ -27,9 +27,17 @@
         <p class="status bad"><ion-icon name="alert-circle" /> {{ inr(total() - b) }} over your {{ inr(b) }} budget</p>
       } @else {
         <p class="status ink-2">{{ inr(b - total()) }} left of {{ inr(b) }}</p>
+        @if (perDay(); as d) { <p class="per-day small ink-2">That is <strong class="ink">{{ inr(d) }} a day</strong> till the month ends.</p> }
       }
     } @else {
       <p class="status small"><a routerLink="/settings">Set a monthly budget</a> to see how much is left.</p>
+    }
+    @if (got()) {
+      <div class="in-out">
+        <div><span class="stat-label">Got</span><strong class="num good">{{ inr(got()) }}</strong></div>
+        <div><span class="stat-label">{{ got() >= total() ? 'Saved' : 'Overspent' }}</span>
+          <strong class="num" [class.good]="got() >= total()" [class.bad]="got() < total()">{{ inr(got() >= total() ? got() - total() : total() - got()) }}</strong></div>
+      </div>
     }
     <div class="grid-2 actions">
       <button class="choice" (click)="act.addExpense()"><span class="emoji">✍️</span>Add expense</button>
@@ -41,7 +49,7 @@
     <section class="card">
       <div class="card-title">Where it went</div>
       @for (c of byCategory(); track c.key) {
-        <div class="cat">
+        <button class="cat" [class.on]="onlyCategory() === c.key" (click)="toggleCategory(c.key)" [attr.aria-pressed]="onlyCategory() === c.key">
           <span class="cat-emoji">{{ c.emoji }}</span>
           <div class="cat-main">
             <div class="cat-head">
@@ -50,7 +58,7 @@
             </div>
             <div class="cat-bar"><span [style.width.%]="c.width"></span></div>
           </div>
-        </div>
+        </button>
       }
     </section>
 
@@ -66,28 +74,51 @@
               [goal]="budget()" goalLabel="Budget" label="Money spent each month" [height]="160" />
   </section>
 
+  @if (expenses().length) {
+    <label class="search">
+      <ion-icon name="search" aria-hidden="true" />
+      <input type="search" placeholder="Search shop, note, category…" aria-label="Search this month"
+             [value]="query()" (input)="query.set($any($event.target).value)" />
+      @if (searching()) {
+        <button type="button" (click)="clearSearch()" aria-label="Clear search"><ion-icon name="close-circle" /></button>
+      }
+    </label>
+    @if (searching()) {
+      <p class="found small ink-2">
+        @if (onlyCategory(); as only) { <strong class="ink">{{ categoryOf($any(only)).label }}</strong> · }
+        {{ groupsCount() }} found · {{ inr(shownTotal().spent) }} spent@if (shownTotal().got) {, {{ inr(shownTotal().got) }} got}
+      </p>
+    }
+  }
+
   @for (g of groups(); track g.date) {
     <div class="day-head">
       <span>{{ dayLabel(g.date) }}</span>
-      <span class="num">{{ inr(g.total) }}</span>
+      @if (g.total) { <span class="num">{{ inr(g.total) }}</span> }
     </div>
     <div class="card list">
       @for (e of g.items; track e.id) {
         <button class="expense" (click)="edit(e)">
-          <span class="cat-emoji">{{ categoryOf(e.category).emoji }}</span>
+          <span class="cat-emoji">{{ categoryOf(e.category, isIn(e)).emoji }}</span>
           <span class="exp-main">
-            <strong>{{ e.merchant || categoryOf(e.category).label }}</strong>
+            <strong>{{ e.merchant || categoryOf(e.category, isIn(e)).label }}</strong>
             <span class="small ink-2">{{ paymentLabel(e) }}{{ e.note ? ' · ' + e.note : '' }}</span>
           </span>
           @if (e.bill) { <ion-icon name="receipt-outline" class="bill-icon" aria-label="Has bill photo" /> }
-          <span class="num amount">{{ inrExactly(e.amount) }}</span>
+          @if (e.repeat) { <ion-icon name="repeat" class="bill-icon" aria-label="Repeats every month" /> }
+          <span class="num amount" [class.good]="isIn(e)">{{ isIn(e) ? '+' : '' }}{{ inrExactly(e.amount) }}</span>
         </button>
       }
     </div>
   } @empty {
     <div class="empty">
-      <span class="emoji">💸</span>
-      No expenses in {{ title() }} yet.<br />Tap <strong>+</strong> or scan a bill.
+      @if (searching()) {
+        <span class="emoji">🔍</span>
+        Nothing found in {{ title() }}.
+      } @else {
+        <span class="emoji">💸</span>
+        Nothing in {{ title() }} yet.<br />Tap <strong>+</strong> or scan a bill.
+      }
     </div>
   }
 

@@ -1,6 +1,10 @@
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IonButton, IonContent, IonInput, ModalController, ToastController } from '@ionic/angular';
+import { IonButton } from '@ionic/angular/ion-button';
+import { IonContent } from '@ionic/angular/ion-content';
+import { IonInput } from '@ionic/angular/ion-input';
+import { ModalController } from '@ionic/angular/modal-controller';
+import { ToastController } from '@ionic/angular/toast-controller';
 import { WORKOUT_TYPES, workoutKcal } from '../../core/catalog';
 import { addDays, dayKey } from '../../core/dates';
 import type { DayKey, WorkoutType } from '../../core/db';

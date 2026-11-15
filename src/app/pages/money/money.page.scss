@@ -143,3 +143,92 @@
 .amount {
   font-weight: 650;
 }
+
+/* Got and Saved, under Spent. */
+.in-out {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--fw-border);
+}
+
+.in-out > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 18px;
+}
+
+.good {
+  color: var(--fw-good-text);
+}
+
+.bad {
+  color: var(--fw-bad);
+}
+
+/* A category row is a button: tap it to see only that category below. */
+button.cat {
+  width: 100%;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  width: calc(100% + 16px);
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.cat.on {
+  background: color-mix(in srgb, var(--c-money) 16%, transparent);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 16px 0;
+  padding: 0 12px;
+  height: 44px;
+  border-radius: 22px;
+  background: var(--fw-card);
+  color: var(--fw-ink-2);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--ion-text-color);
+  font: inherit;
+}
+
+.search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-right: -6px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 20px;
+}
+
+.found {
+  margin: 8px 20px 0;
+}
+
+.per-day {
+  margin: 4px 0 0;
+}
