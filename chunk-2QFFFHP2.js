@@ -1,0 +1,1 @@
+import{a as e,b as t,e as n}from"./chunk-ZZ2S753B.js";import"./chunk-ZSHLT67R.js";var o=class extends n{async processImage(p){throw this.createUnimplementedException()}createUnimplementedException(){return new t("This method is not implemented on web.",e.Unimplemented)}};export{o as TextRecognitionWeb};
