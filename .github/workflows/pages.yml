@@ -4,7 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 concurrency:
@@ -16,6 +16,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      # GitHub's own website host is very slow for big files on some Indian networks, so the app's
+      # files are served by jsDelivr, straight from this repo's "site" branch (one tag per publish).
+      FILES: https://cdn.jsdelivr.net/gh/${{ github.repository }}@site-${{ github.run_number }}/
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,7 +28,24 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx ng test --watch=false
-      - run: npx ng build --base-href /wallet/
+      - run: npx ng build --base-href /wallet/ --deploy-url "$FILES"
+      - name: Put the built files on the "site" branch
+        working-directory: dist/fitwallet/browser
+        run: |
+          git init -q -b site
+          git add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Site ${{ github.run_number }}"
+          git tag site-${{ github.run_number }}
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" site site-${{ github.run_number }}
+          rm -rf .git
+      - name: Wait until the fast host has them
+        run: |
+          main=$(ls dist/fitwallet/browser | grep -E '^main-.*\.js$')
+          for i in $(seq 1 30); do
+            curl -sfo /dev/null "$FILES$main" && exit 0
+            sleep 5
+          done
+          echo "jsDelivr never served $main" && exit 1
       # Opening a page inside the app directly (or refreshing it) still lands in the app.
       - run: cp dist/fitwallet/browser/index.html dist/fitwallet/browser/404.html
       - uses: actions/upload-pages-artifact@v3

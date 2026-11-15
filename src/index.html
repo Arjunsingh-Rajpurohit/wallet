@@ -16,6 +16,9 @@
   <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <!-- Shown until the app's own files arrive, so a slow line is never a blank page. -->
+    <p style="margin:0;height:100dvh;display:grid;place-items:center;font:500 16px system-ui,sans-serif;color:#8a8a8a">Loading…</p>
+  </app-root>
 </body>
 </html>

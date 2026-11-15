@@ -1,13 +1,15 @@
 // Keeps the app's own files on the phone so it opens with no internet. No data passes through here.
 const CACHE = `app:${self.registration.scope}`;
 const HOME = self.registration.scope;
+// The app's big files come from a faster host (it serves them straight from the GitHub repo).
+const FILES = 'https://cdn.jsdelivr.net/gh/Arjunsingh-Rajpurohit/';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET' || !req.url.startsWith(HOME)) return;
+  if (req.method !== 'GET' || !(req.url.startsWith(HOME) || req.url.startsWith(FILES))) return;
   if (req.mode === 'navigate') {
     // Always the newest page when online; the kept one when not.
     e.respondWith(fetch(HOME, { cache: 'no-cache' }).then((res) => {
