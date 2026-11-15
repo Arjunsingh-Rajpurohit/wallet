@@ -38,14 +38,18 @@ jobs:
           git tag site-${{ github.run_number }}
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" site site-${{ github.run_number }}
           rm -rf .git
-      - name: Wait until the fast host has them
+      # The first request for a file makes jsDelivr fetch it from GitHub, which can take a minute.
+      # Asking for every file here means no visitor is ever that first request.
+      - name: Warm every file on the fast host
+        working-directory: dist/fitwallet/browser
         run: |
-          main=$(ls dist/fitwallet/browser | grep -E '^main-.*\.js$')
-          for i in $(seq 1 30); do
-            curl -sfo /dev/null "$FILES$main" && exit 0
-            sleep 5
+          for f in *.js *.css; do
+            for i in $(seq 1 20); do
+              curl -sf --max-time 120 -o /dev/null "$FILES$f" && continue 2
+              sleep 5
+            done
+            echo "jsDelivr never served $f" && exit 1
           done
-          echo "jsDelivr never served $main" && exit 1
       # Opening a page inside the app directly (or refreshing it) still lands in the app.
       - run: cp dist/fitwallet/browser/index.html dist/fitwallet/browser/404.html
       - uses: actions/upload-pages-artifact@v3
